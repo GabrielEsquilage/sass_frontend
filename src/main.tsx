@@ -21,14 +21,8 @@ function App() {
     } catch { /* Theme persistence is optional. */ }
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
-  const [session, setSession] = useState<Session | null>(() => {
-    try {
-      const saved = localStorage.getItem('interfaceamento-session');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Keep bearer credentials in memory only; never persist them in browser storage.
+  const [session, setSession] = useState<Session | null>(null);
   const [availableLabs, setAvailableLabs] = useState<Laboratory[]>([]);
   const [selectedLab, setSelectedLab] = useState('');
   const [page, setPage] = useState<Page>('overview');
@@ -43,11 +37,6 @@ function App() {
     document.documentElement.dataset.theme = theme;
     try { localStorage.setItem('interfaceamento-theme', theme); } catch { /* Theme still works without storage. */ }
   }, [theme]);
-
-  useEffect(() => {
-    if (!session) return;
-    try { localStorage.setItem('interfaceamento-session', JSON.stringify(session)); } catch { /* Session remains in memory. */ }
-  }, [session]);
 
   useEffect(() => {
     if (!session || selectedLab) return;
@@ -120,7 +109,6 @@ function App() {
     setSearch('');
     setFilter('all');
     if (clearError) setError('');
-    try { localStorage.removeItem('interfaceamento-session'); } catch { /* Nothing to clear. */ }
   }
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
